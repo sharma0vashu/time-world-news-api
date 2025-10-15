@@ -54,5 +54,13 @@ def top_news():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api", methods=["GET"])
+def api():
+    try:
+        data = fetch_top_stories()
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=4000)
