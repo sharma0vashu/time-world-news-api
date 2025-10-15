@@ -2,27 +2,31 @@ from flask import Flask, jsonify
 import requests
 import re
 
-app= Flask(__name__)
+app = Flask(__name__)
 
 def fetch_top_stories():
-    URL="https://time.com/section/world/"
-    headers ={ "User-Agent":"Mozilla/5.0(Windows NT 10.0; Win64; x64)"}
-    html= requests.get(URL,headers = headers).text
+    URL = "https://time.com/section/world/"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    html = requests.get(URL, headers=headers).text
 
-    article_blocks= re.findall(r"<article.*?</article>", html, re.DOTALL)
-    top_stories= []
+    # Extract <article> blocks
+    article_blocks = re.findall(r"<article.*?</article>", html, re.DOTALL)
+
+    top_stories = []
     for i, article in enumerate(article_blocks[:6], 1):
-        
+        # Title and link
         title_match = re.search(
             r'<a[^>]*href="([^"]+)"[^>]*>\s*<span>(.*?)</span>',
             article,
             re.DOTALL
         )
+        # Author (handles comment tag)
         author_match = re.search(
             r'<p[^>]*>\s*by\s*(?:<!--\s*-->)?\s*([^<]+)</p>',
             article,
             re.DOTALL | re.IGNORECASE
         )
+
         if not title_match:
             continue
 
@@ -38,7 +42,10 @@ def fetch_top_stories():
             "url": link,
             "section": "World"
         })
+
     return {"top_stories": top_stories}
+
+
 @app.route("/", methods=["GET"])
 def top_news():
     try:
@@ -48,4 +55,4 @@ def top_news():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=6000)
+    app.run(debug=True, host="0.0.0.0", port=4000)
